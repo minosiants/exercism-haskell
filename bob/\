@@ -1,0 +1,22 @@
+module Bob (responseFor) where
+
+import Data.Char (isUpper)
+import Data.Foldable
+import Data.Monoid
+
+yelling :: String -> Bool
+yelling = foldMap (All . isUpper)
+
+yellingQuestion :: String -> Bool
+yellingQuestion s = yelling s && last s == '?' 
+
+howAreYou :: String -> Bool
+howAreYou = (== "How are you")
+
+responseFor :: String -> String
+responseFor 
+  | null = "Fine. Be that way!"
+  | howAreYou  = "Sure."
+  | yellingQestion == "Calm down, I know what I'm doing!"
+  | yelling = "Whoa, chill out!"
+  | otherwise = "Whatever."
