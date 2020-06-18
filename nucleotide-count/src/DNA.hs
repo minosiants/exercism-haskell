@@ -6,18 +6,18 @@ import qualified Data.Map as M
 
 data Nucleotide = A | C | G | T deriving (Eq, Ord, Show)
 
-parce :: Char -> Either Char Nucleotide
-parce 'A' = Right A
-parce 'C' = Right C
-parce 'G' = Right G
-parce 'T' = Right T
-parce l = Left l
+parse :: Char -> Either Char Nucleotide
+parse 'A' = Right A
+parse 'C' = Right C
+parse 'G' = Right G
+parse 'T' = Right T
+parse l = Left l
 
 nucleotideCounts :: String -> Either String (Map Nucleotide Int)
 nucleotideCounts xs =
-  case traverse parce xs of
+  case traverse parse xs of
     Left _ -> Left xs
     Right v -> Right $ L.foldr addToMap M.empty v
       where
-        addToMap el m =
-          insertWith (+) el 1 m
+        addToMap el =
+          insertWith (+) el 1
