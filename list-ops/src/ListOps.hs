@@ -16,7 +16,7 @@ import Prelude hiding
     filter,
     foldr,
     length,
-    map,
+   map,
     reverse,
   )
 
