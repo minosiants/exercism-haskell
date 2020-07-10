@@ -24,10 +24,8 @@ rebase inputBase outputBase inputDigits
   | inputBase == 10 = (convert outputBase) . sum' <$> (validateDigits inputBase inputDigits)
   | otherwise = (convert outputBase) . (to10Base inputBase) <$> (validateDigits inputBase inputDigits)
   where
+    convert _ 0 = []
     convert base num =
-      if num == 0
-        then []
-        else
           let res = num `div` base
               rest = num `mod` base
            in (convert base res) ++ [rest]
