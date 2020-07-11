@@ -1,0 +1,31 @@
+module Series (Error (..), largestProduct) where
+
+import Control.Monad (foldM)
+import Data.Char (digitToInt, isDigit)
+import Debug.Trace
+
+data Error = InvalidSpan | InvalidDigit Char deriving (Show, Eq)
+
+validate :: Char -> Either Error Integer
+validate digit
+  | isDigit digit = Right $ (fromIntegral . digitToInt) digit
+  | otherwise = Left $ InvalidDigit digit
+
+largestProduct :: Int -> String -> Either Error Integer
+largestProduct size digits
+  | (length digits) < size = Left InvalidSpan
+  | otherwise = calculate
+  where
+    start = fmap (\s -> (s, (drop size digits))) $ traverse validate $ take size digits
+    process sizedDigits newDight = do
+      d <- validate newDight
+      let biggest = product $ trace ("sizedDigits " ++ show sizedDigits ++ "newDight " ++ show d) (sizedDigits)
+          sizedDigits' = d : (take (size -1) sizedDigits)
+          biggest' = product $ trace ("sizedDigits' " ++ show sizedDigits') (sizedDigits')
+       in if (biggest' > biggest)
+            then return $ sizedDigits'
+            else return $ sizedDigits
+    calculate = do
+      s <- start
+      result <- foldM process s drop size digits
+      return $ product result
