@@ -18,11 +18,11 @@ largestProduct size digits
   | otherwise = calculate
   where
     start = fmap (\s -> (s, (drop size digits))) $ traverse parse $ take size digits
-    process (sizedDigits, result) newDight = do
-      d <- parse newDight  
+    process (sizedDigits, biggest) newDight = do
+      d <- parse newDight
       let sizedDigits' = (drop 1 sizedDigits) ++ [d]
           biggest' = product $ sizedDigits'
-       in return $ (sizedDigits', max biggest' result)
+       in return $ (sizedDigits', max biggest' biggest)
     calculate = do
       (s, rest) <- start
       (_, result) <- foldM process (s, product s) rest
