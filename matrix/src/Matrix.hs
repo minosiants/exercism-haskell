@@ -22,7 +22,7 @@ data Matrix a = Matrix (Vector (Vector a)) deriving (Eq, Show)
 cols :: Matrix a -> Int
 cols (Matrix xs)
   | null xs || null (xs V.! 0) = 0
-  | otherwise = V.length (xs V.! 0)
+  | otherwise = (V.length.V.head) xs 
 
 column :: Int -> Matrix a -> Vector a
 column x (Matrix xs) = foldr (\r acc -> V.cons (r V.! (x -1)) acc) V.empty xs
@@ -34,7 +34,7 @@ fromList :: [[a]] -> Matrix a
 fromList xs = Matrix $ V.fromList $ V.fromList <$> xs
 
 fromString :: Read a => String -> Matrix a
-fromString xs = fromList $ (fmap . fmap) read $ nums 
+fromString xs = fromList $ (fmap . fmap) read $ nums
   where
     nums = fmap words (lines xs)
 
@@ -57,4 +57,3 @@ shape matrix = ((rows matrix), (cols matrix))
 
 transpose :: Matrix a -> Matrix a
 transpose matrix = Matrix $ V.fromList $ (\i -> column i matrix) <$> [1 .. (cols matrix)]
-
