@@ -1,0 +1,17 @@
+module Triplet (tripletsWithSum) where
+
+tripletsWithSum :: Int -> [(Int, Int, Int)]
+tripletsWithSum sum' =
+  foldl
+    ( \acc (a, b, c) ->
+        if (elem (b, a, c) acc)
+          then acc
+          else (a, b, c) : acc
+    )
+    []
+    $ filter
+      ( \(a, b, c) ->
+          a * a + b * b == c
+            && a + b + c == sum'
+      )
+      [(a, b, (floor.sqrt) (a * a + b * b)) | a <- [1 .. sum'], b <- [1 .. sum']]
