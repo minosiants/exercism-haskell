@@ -1,7 +1,5 @@
 module Brackets (arePaired) where
 
-import Debug.Trace
-
 data Bracket = BracketL | BracketR | BracesL | BracesR | ParenthesesL | ParenthesesR deriving (Eq, Show)
 
 mkBracket :: Char -> Maybe Bracket
