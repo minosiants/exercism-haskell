@@ -1,5 +1,7 @@
 module Brackets (arePaired) where
 
+import Debug.Trace
+
 data Bracket = BracketL | BracketR | BracesL | BracesR | ParenthesesL | ParenthesesR deriving (Eq, Show)
 
 mkBracket :: Char -> Maybe Bracket
@@ -13,21 +15,21 @@ mkBracket ch =
     ')' -> Just $ ParenthesesR
     _ -> Nothing
 
-arePaired :: String -> Bool
+arePaired :: [Char] -> Bool
 arePaired txt = go [] txt
   where
     go :: [Bracket] -> [Char] -> Bool
     go [] [] = True
     go _ [] = False
-    go l@(b : bs) (x : xs) =
-      case (b, (mkBracket x)) of
-        (BracesL, (Just BracesR)) -> go bs xs
+    go bs (x : xs) =
+      case (bs, (mkBracket x)) of
+        (BracesL : bs', (Just BracesR)) -> go bs' xs
         (_, (Just BracesR)) -> False
-        (_, (Just BracesL)) -> go (BracesL : l) xs
-        (BracketL, (Just BracketR)) -> go bs xs
+        (_, (Just BracesL)) -> go (BracesL : bs) xs
+        (BracketL : bs', (Just BracketR)) -> go bs' xs
         (_, (Just BracketR)) -> False
-        (_, (Just BracketL)) -> go (BracketL : l) xs
-        (ParenthesesL, (Just ParenthesesR)) -> go bs xs
+        (_, (Just BracketL)) -> go (BracketL : bs) xs
+        (ParenthesesL : bs', (Just ParenthesesR)) -> go bs' xs
         (_, (Just ParenthesesR)) -> False
-        (_, (Just ParenthesesL)) -> go (ParenthesesL : l) xs
-        (_, _) -> go bs xs
+        (_, (Just ParenthesesL)) -> go (ParenthesesL : bs) xs
+        (_, Nothing) -> go bs xs
