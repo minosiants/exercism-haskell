@@ -36,6 +36,8 @@ cipher column xs =
   let row = foldr (\x acc -> (x !! column) : acc) [] xs
    in if column == 0 then [row] else (cipher (column -1) xs) ++ [row]
 
+-- colLen = ceiling . sqrt . fromIntegral .length $ formatedStr
+
 -- try to use transpose https://hackage.haskell.org/package/base-4.14.1.0/docs/Data-List.html#v:transpose
 -- instead of cipher
 encode :: String -> String
