@@ -4,6 +4,12 @@ import Data.List
 import Data.Maybe
 import Debug.Trace
 
+-- My version is very ugly
+
+-- Generate infinit sequense of natural numbers
+-- Filter out primes
+-- https://exercism.io/tracks/haskell/exercises/nth-prime/solutions/1f4e8f7f0b0146af957aef143aa50dbb
+
 mkPrimes :: Integer -> [(Integer, Bool)] -> [(Integer, Bool)]
 mkPrimes p xs' =
   case (find (\(i, prime) -> prime == True && i >= p)) xs' of
