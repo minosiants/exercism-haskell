@@ -51,6 +51,4 @@ toList :: BST a -> [a]
 toList bst =
   case bst of
     Leaf -> []
-    (Node Leaf v right) -> v : toList right
-    (Node left v Leaf) -> toList left ++ [v]
     (Node left v right) -> toList left ++ [v] ++ toList right
