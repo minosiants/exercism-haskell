@@ -21,49 +21,46 @@ instance Show Species where
   show Cow = "cow"
   show Horse = "horse"
 
-newtype Reaction = Reaction String deriving (Show)
+class React a where
+  react :: a -> String
 
-reactionM :: String -> Maybe Reaction
-reactionM str = Just $ Reaction str
+instance React Species where
+  react Spider = "It wriggled and jiggled and tickled inside her."
+  react Bird = "How absurd to swallow a bird!"
+  react Cat = "Imagine that, to swallow a cat!"
+  react Dog = "What a hog, to swallow a dog!"
+  react Goat = "Just opened her throat and swallowed a goat!"
+  react Cow = "I don't know how she swallowed a cow!"
+  react _ = ""
 
-data ChainLink
-  = ChainLink Species (Maybe Reaction)
-  deriving (Show)
-
-foodChain :: [ChainLink]
+foodChain :: [Species]
 foodChain =
-  [ ChainLink Fly Nothing,
-    ChainLink Spider (reactionM "It wriggled and jiggled and tickled inside her."),
-    ChainLink Bird (reactionM "How absurd to swallow a bird!"),
-    ChainLink Cat (reactionM "Imagine that, to swallow a cat!"),
-    ChainLink Dog (reactionM "What a hog, to swallow a dog!"),
-    ChainLink Goat (reactionM "Just opened her throat and swallowed a goat!"),
-    ChainLink Cow (reactionM "I don't know how she swallowed a cow!"),
-    ChainLink Horse Nothing
+  [ Fly,
+    Spider,
+    Bird,
+    Cat,
+    Dog,
+    Goat,
+    Cow,
+    Horse
   ]
 
-verse :: [ChainLink] -> [String]
+verse :: [Species] -> [String]
 verse [] = []
 verse (x : xs) =
   case x of
-    (ChainLink Fly _) ->
-      [firstLine Fly] ++ [lastLine] ++ [""] ++ verse xs
-    (ChainLink sp (Just reaction)) ->
-      let part = printPart sp reaction
-       in part ++ verse xs
-    (ChainLink Horse _) -> [firstLine Horse] ++ ["She's dead, of course!"]
-    _ -> error ""
-  where
-    printPart :: Species -> Reaction -> [String]
-    printPart sp (Reaction r) =
-      let uns = uncestors sp foodChain
-       in [firstLine sp] ++ [r] ++ fmap secondLine uns ++ [lastLine] ++ [""]
+    Fly -> [firstLine Fly] ++ [lastLine] ++ [""] ++ verse xs
+    Horse -> firstLine Horse : ["She's dead, of course!"]
+    sp -> printVerse sp ++ verse xs
 
-uncestors :: Species -> [ChainLink] -> [(Species, Species)]
+printVerse :: Species -> [String]
+printVerse sp =
+  let uns = uncestors sp foodChain
+   in [firstLine sp] ++ [react sp] ++ fmap secondLine uns ++ [lastLine] ++ [""]
+
+uncestors :: Species -> [Species] -> [(Species, Species)]
 uncestors sp xs =
-  let ss = fmap (\(ChainLink sp' _) -> sp') xs
-      species = takeWhile (/= sp) ss
-      s = reverse $ species ++ [sp]
+  let s = reverse $ takeWhile (/= sp) xs ++ [sp]
    in zip s (tail s)
 
 secondLine :: (Species, Species) -> String
@@ -81,5 +78,3 @@ lastLine = "I don't know why she swallowed the fly. Perhaps she'll die."
 
 song :: String
 song = unlines $ verse foodChain
-
-song2 = verse foodChain
