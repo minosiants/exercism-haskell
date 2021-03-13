@@ -1,30 +1,18 @@
-module Transpose (transpose,testTranspose) where
+module Transpose (transpose) where
 
-import Control.Monad.Trans.State
+import Control.Monad.Trans (MonadTrans (lift))
+import Control.Monad.Trans.Maybe (MaybeT (MaybeT, runMaybeT))
+import Control.Monad.Trans.State (State, evalState, get, modify)
 import Data.Char (isSpace)
-import Data.List (dropWhileEnd, find)
-import Data.Maybe ( fromMaybe )
+import Data.Maybe (fromMaybe)
 import Debug.Trace
-
-transpose' :: [String] -> [String]
-transpose' [] = []
-transpose' xs =
-  fmap (dropWhileEnd (== ' ') . (`column` padded)) [0 .. width -1]
-  where
-    width = maximum $ fmap length xs
-    padded =
-      concatMap (\x -> take width (x ++ repeat ' ')) xs
-    column i txt = go (drop i txt)
-      where
-        go [] = ""
-        go (x : xs') = x : go (drop (width -1) xs')
 
 data TransState
   = TransState
       { source :: [String],
         widths :: [Int],
         rowsCount :: Int,
-        result :: [String]
+        currentRow :: String
       }
   deriving (Show)
 
@@ -35,7 +23,7 @@ mkState xs = TransState xs w 0 []
 
 incRowCount :: State TransState Int
 incRowCount = do
-  _ <- modify (\(TransState s w rc c) -> TransState s w (rc + 1) c)
+  _ <- modify (\(TransState s w rc cv) -> TransState s w (rc + 1) cv)
   rowCountS
 
 rowCountS :: State TransState Int
@@ -44,6 +32,13 @@ rowCountS = do rowsCount <$> get
 sourceS :: State TransState [String]
 sourceS = do source <$> get
 
+currentRowS :: State TransState String
+currentRowS = do currentRow <$> get
+
+setCurrentRow :: String -> State TransState String
+setCurrentRow v = do
+    _ <- modify (\(TransState s w rc _) -> TransState s w rc v)
+    currentRowS 
 widthsS :: State TransState [Int]
 widthsS = do widths <$> get
 
@@ -63,9 +58,8 @@ padded = do
 row :: Int -> String -> State TransState String
 row i txt = do
   mw <- maxWidth
-  r  <- dropSpaces $  go mw (drop i txt) 
   _ <- incRowCount
-  return r
+  dropSpaces $ go mw (drop i txt)
   where
     go _ [] = ""
     go mw (x : xs) =
@@ -73,28 +67,36 @@ row i txt = do
 
 dropSpaces :: String -> State TransState String
 dropSpaces r = do
-  let indexed = zip  r  [0 .. (length r -1)]
+  let indexed = zip r [0 .. (length r -1)]
+  _ <- setCurrentRow r
   r <- traverse addChar indexed
   let rr = foldr (<>) Nothing r
   return $ fromMaybe "" rr
 
 addChar :: (Char, Int) -> State TransState (Maybe String)
-addChar (ch, i) = do
-  c <- rowCountS
-  w <- width i
-  isLast <- checkIfLast i
-  let r = w >>= (\w' -> if (w' > c || (isLast && (not . isSpace) ch)) then Just [ch] else Nothing)
-  return r 
-
-checkIfLast :: Int -> State TransState Bool 
-checkIfLast i = do
-    ii <- fmap length sourceS 
+addChar  (ch, i)
+  | (not . isSpace) ch = return $ Just [ch]
+  | otherwise = do
+    c <- rowCountS
     w <- width i
-    r <- traverse width  [i..ii-1]
-    let t= tail r   
-    let res = not $ any (\x -> fromMaybe 0 x > fromMaybe 0 w ) t
-    return res 
-  
+    isLast <- checkIfLast i
+    let r = w >>= (\w' -> if (w' >= c || not isLast) then Just [ch] else Nothing)
+    return $ trace("count: " ++ show c++ " char: "++ show i)r
+
+
+
+checkIfLast :: Int -> State TransState Bool
+checkIfLast i = fmap (fromMaybe False) $ runMaybeT $ do
+  w <- MaybeT $ width i
+  cv <- lift currentRowS
+  let v = drop i  
+  ii <- lift (fmap length sourceS)
+  r <- lift $ traverse width [i .. ii -1]
+  t <- MaybeT . return $ sequence (tail r)
+  let dd = (filter (not.isSpace) $ drop i cv) =="" 
+
+  let res = not $ any (> w) t && (filter (not . isSpace) $ drop i cv) /=""  
+  return $ trace ("width: " ++ show r ++ "row: \'" ++ cv++ "'  proc '"++show dd++"\'") res
 
 transpose :: [String] -> [String]
 transpose [] = []
@@ -106,15 +108,3 @@ transpose xs =
         traverse (`row` p) [0 .. (mw -1)]
     )
     (mkState xs)
-
-
-
-testTranspose :: IO ()
-testTranspose = do
-  putStr "start"
-  let txt = ["TAA AT","M r", "Rtyr"]
-  let res = transpose txt 
-  putStr "before\n"
-  putStr $ show res
-  putStr "\nafter\n"
-  putStr "end"
