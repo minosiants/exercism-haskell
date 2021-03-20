@@ -1,0 +1,13 @@
+module Frequency (frequency) where
+
+import Data.Map (Map)
+import qualified Data.Map as M
+import Data.Text (Text)
+import qualified Data.Text as T
+
+frequency :: Int -> [Text] -> Map Char Int
+frequency nWorkers texts =
+  foldr addChar M.empty ((T.toLower . T.concat) texts))
+  where
+    addChar :: Char -> Map Char Int -> Map Char Int
+    addChar = undefined
