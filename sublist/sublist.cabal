@@ -1,0 +1,36 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 5632f6a22fb71587bccfc97cd3f284951a1f9df39958d8674802f219b09600fa
+
+name:           sublist
+version:        1.1.0.6
+build-type:     Simple
+
+library
+  exposed-modules:
+      Sublist
+  other-modules:
+      Paths_sublist
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      base
+  default-language: Haskell2010
+
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: Tests.hs
+  other-modules:
+      Paths_sublist
+  hs-source-dirs:
+      test
+  build-depends:
+      base
+    , hspec
+    , sublist
+  default-language: Haskell2010
