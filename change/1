@@ -1,0 +1,29 @@
+module Change (findFewestCoins) where
+
+import Data.List
+import Debug.Trace
+import Control.Applicative
+
+
+findFewestCoins :: Integer -> [Integer] -> Maybe [Integer]
+findFewestCoins _ [] =Nothing
+findFewestCoins 0 _ = Nothing
+findFewestCoins target coins =
+  (:[]) <$> find (== target) coins <|> Just (go target)
+  where
+    go :: Integer -> [Integer]
+    go 0 = []
+    go target =
+      let coin = findCoin target coins
+          t = target - coin
+      in if trace("coin: "++ show coin ++ " target: "++ show target)(t < 0) then [] else coin : go t
+   
+   
+   
+   
+findCoin :: Integer -> [Integer] -> Integer
+findCoin target coins = last $ filter(\x -> x `div` target == 0) coins
+
+
+
+coins = [1, 5, 10, 25, 100]
